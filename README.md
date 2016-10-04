@@ -7,11 +7,11 @@ BBHO (pronounced BeeBo because names are much more fun) is a Black Box Optimizat
 2. We choose two random inputs, and evaluate our black box function on these two inputs.
 3. We then do the following for every point in our domain(can be whatever you choose it to be, it could for example be the ranges of two parameters on a reinforcement learning task). If n > 1 then get the cartesian product of the ranges for all hyper parameter input ranges in order to get all points on our domain.
   * a. Generate a covariance matrix K for every possible pair of points on our domain using our covariance function cov(x_i, x_j)
-  * b. Using our point we are currently evaluating on the domain(the test point / x_\*), we generate a covariance vector K_* via cov(x_*, x_i) for each i in n and scalar K_** = cov(x_*, x_*)
-  * c. We then get the mean u_* and variance c_* of our test point x_* with our covariance matrix K and known function outputs f: u_* = K^T_* * K^-1 * f, c_* = K_** - K^T_* * K^-1 * K_*
+  * b. Using our point we are currently evaluating on the domain(the test point / x_\*), we generate a covariance vector K_\* via cov(x_\*, x_i) for each i in n and scalar K_\*\* = cov(x_\*, x_\*)
+  * c. We then get the mean u_\* and variance c_\* of our test point x_\* with our covariance matrix K and known function outputs f: u_\* = K^T_\* \* K^-1 \* f, c_\* = K_\*\* - K^T_\* \* K^-1 \* K_\*
   * d. Store these, adding a noise parameter to our calculated variance if we have some aspect of uncertainty in our evaluations
-4. Using our calculated means and variances for all inputs in the domain, compute our f_* value for each via f_* = u_* + c_* if we're maximizing or f_* = u_* - c_* if we're minimizing
-5. Using our calculated means, variances, and f_* values, argmax over our acquisition function to get our next input to evaluate.
+4. Using our calculated means and variances for all inputs in the domain, compute our f_\* value for each via f_\* = u_\* + c_\* if we're maximizing or f_\* = u_\* - c_\* if we're minimizing
+5. Using our calculated means, variances, and f_\* values, argmax over our acquisition function to get our next input to evaluate.
 6. Evaluate our new input, and start over from step 3 until we use all our allowed evaluations.
 
 Considering the amount of resources and/or long videos I had to watch to learn all that I now know (assuming that I didn't get something big wrong), the large amount of information needed to build from the ground-up, and the lack of a site containing all of it explained from the ground up in the way I am thinking, I plan on making a blog to contain it as well as my understanding and explanations of other concepts i've learned, and also all of my projects.
