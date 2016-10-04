@@ -7,7 +7,7 @@ BBHO (pronounced BeoBo because names are much more fun) is a Black Box Optimizat
 3. We then do the following for every point in our domain(can be whatever you choose it to be, it could for example be the ranges of two parameters on a reinforcement learning task). If ![](http://www.sciweavers.org/tex2img.php?eq=%5C%5Bn%20%3E%201%5C%5D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0), then get the cartesian product of the ranges for all hyper parameter input ranges in order to get all points on our domain.
   * a. Generate a covariance matrix ![](http://www.sciweavers.org/tex2img.php?eq=%5C%5BK%20%5C%5D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) for every possible pair of points on our domain(notating this as K)
   * b. Using our point we are currently evaluating on the domain(the test point), we generate a covariance vector ![](http://www.sciweavers.org/tex2img.php?eq=%5C%5BK_%2A%20%5C%5D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
-  * c. <img src="http://www.sciweavers.org/tex2img.php?eq=%5C%5Bn%20%3E%201%5C%5D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0" align="center" border="0" alt="\[n > 1\]" width="46" height="14" />
+  * c. ![](http://www.sciweavers.org/tex2img.php?eq=%5C%5Bn%20%3E%201%5C%5D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
 
 
 
