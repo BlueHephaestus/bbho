@@ -20,7 +20,7 @@ Future self will put it here:
 
 
 #Resources where I learned what I needed to go from fundamentals to this:
-###Videos(These are really really helpful for ground-up explanations, and taught me most of it)
+###Videos(These are really really helpful for ground-up explanations, and taught me most of it; specifically the last two)
 
 [mathematicalmonk 19.1](https://www.youtube.com/watch?v=vU6AiEYED9E)
 
