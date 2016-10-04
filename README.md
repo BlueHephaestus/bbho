@@ -2,7 +2,7 @@
 
 BBHO (pronounced BeoBo because names are much more fun) is a Black Box Optimization program that uses [Bayesian Optimization](https://arxiv.org/pdf/1206.2944.pdf) to optimize a given unknown (black box) function. It does this using something known as Gaussian Processes for Regression, and then what is known as an acquisition function. Here's what happens:
 
-1. We have a function that takes ![](http://www.sciweavers.org/tex2img.php?eq=%5C%5Bn%20%5Cgeq%201%5C%5D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) of inputs. (I need to learn how to latex)
+1. We have a function that takes ![](http://www.sciweavers.org/tex2img.php?eq=%5C%5B%20K%20%5C%5B&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) of inputs. (I need to learn how to latex)
 2. We choose two random inputs, and evaluate our black box function on these two inputs.
 3. We then do the following for every point in our domain(can be whatever you choose it to be, it could for example be the ranges of two parameters on a reinforcement learning task). If ![](http://www.sciweavers.org/tex2img.php?eq=%5C%5Bn%20%3E%201%5C%5D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0), then get the cartesian product of the ranges for all hyper parameter input ranges in order to get all points on our domain.
   * a. Generate a covariance matrix ![](http://www.sciweavers.org/tex2img.php?eq=%5C%5BK%20%5C%5D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) for every possible pair of points on our domain(notating this as K)
