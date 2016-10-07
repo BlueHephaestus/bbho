@@ -72,7 +72,7 @@ class periodic1(covariance_function):
     def evaluate(self, x_i, x_j):
         return self.f(x_i, x_j)
         
-class matern(covariance_function):
+class matern1(covariance_function):
     """
     NOT UPGRADING THIS YET SINCE THEANO DOESN'T HAVE THE BESSEL FUNCTION
     AND ALSO BECAUSE I DON'T KNOW WHY MY IMPLEMENTATION IS HORRIBLY BROKEN
@@ -85,3 +85,15 @@ class matern(covariance_function):
     def evaluate(self, x_i, x_j):
         dist = np.linalg.norm(x_i-x_j)
         return np.nan_to_num(((2**(1-self.v))/(ss.gamma(self.v))) * ((np.sqrt(2*self.v) * (dist/self.lengthscale))**self.v) * ss.kv(self.v, (np.sqrt(2*self.v) * (dist/self.lengthscale))))
+
+class matern2(covariance_function):
+
+    def __init__(self, lengthscale, v):
+        covariance_function.__init__(self, lengthscale, v)
+        self.dist = theano.function([x1, x2], T.sum(T.sqr(x1-x2)))
+        self.f = theano.function([x1, x2], 
+                (1 + T.sqrt(5 * T.sum(T.sqr(x1-x2))) + (5.0/3.0) * T.sum(T.sqr(x1-x2))) * T.exp(-T.sqrt(5 * T.sum(T.sqr(x1-x2)))),
+                allow_input_downcast=True)
+
+    def evaluate(self, x_i, x_j):
+        return self.f(x_i, x_j)
