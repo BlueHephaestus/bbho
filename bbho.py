@@ -1,34 +1,16 @@
 """
-Penultimate program - making to port over to full on machine learning applications after testing here.
+Read all the details on the github (soon to be blog) here:
+    https://github.com/DarkElement75/bbho
 
-Still working on a name for the full one, it won't be CHO MK 2 since it now uses a conventional hyper 
-  parameter tuning method, but I don't want to call it just Bayesian Optimization (BO) since that would
-  omit some details, like hyper parameters tuning. I'll figure it out, but for now, this program works like this:
-
-Given an input function,
-
-1. Get input domains via xrange(min, max, ((max-min)/n)) where n is arbitrary level of detail, i.e. 10,000 
-    and min/max are defined beforehand for each input
-2. Generate two random input vectors x1, x2 where each element is min <= x <= max and on our domain
-3. Evaluate x1 & x2 to get f1 & f2
-4. Generate n test means(u* s) and test variances(c* s) across domain via the following for each test input x*:
-    a. Generate covariance matrix with known inputs
-    b. Generate covariance vector and transpose with known inputs and test input, as well as diagonal
-    c. u* = (K* transpose) * (K inverse) * (known_evaluations)
-    d. c* = (K* diag) - (K* transpose) * (K inverse) * (K*)
-5. 
-    If maximizing, set output at each test x (f(x*)) = u* + c*
-    If minimizing, set f(x*) = u* - c*
-
-6. Generate upper confidence bound acquisition function vector and get best new inputs via argmaxing it:
-    x_i = domain[argmax(u* - confidence_interval * c*)
-
-7. Go back to step 3 until i == end_iteration
-8. Final inputs = domain[argmax(f*)]
+Made by Blake Edwards / Dark Element
 """
+
 import sys, time
 
 import numpy as np
+
+import theano
+import theano.tensor as T
 
 from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
@@ -79,7 +61,7 @@ acquisition_function = upper_confidence_bound(confidence_interval)
 #Choice of covariance function and cf parameters
 lengthscale = 1.0
 v = [5/2.0]
-covariance_function = squared_exponential(lengthscale, v)
+covariance_function = matern2(lengthscale, v)
 
 #Initialize ranges for each parameter into a resulting matrix
 hps = [HyperParameter(0, 10)]
@@ -98,7 +80,7 @@ independent_domains = np.array([np.arange(hp.min, hp.max, ((hp.max-hp.min)/float
 n = detail_n**len(hps)
 
 #Get the cartesian product of all vectors contained to get entire multidimensional domain
-domain = [np.array(i) for i in cartesian_product(independent_domains)]
+domain = cartesian_product(independent_domains)
 
 #Get our axis vectors if plotting
 if plot_results:
@@ -114,6 +96,17 @@ for independent_domain in independent_domains:
 #Get our different values easily by transposing
 x1, x2 = independent_domains.transpose()[:2]
 
+#Known inputs
+training_inputs = T.vector()
+
+#Known evaluations
+training_outputs = T.vector()
+
+#Cartesian product of the ranges of each of our hyper parameter ranges
+test_domain = T.matrix()
+
+#get_next_input = theano.function([training_inputs, training_outputs, test_domain], outputs=cov_m)
+
 #Now that we have our two random input vectors, evaluate them and store them in our bbf inputs and outputs vector
 #Modify the bbf function when you make this more complicated with input to a bot
 #This needs to not be a np.array since we have to append
@@ -122,6 +115,8 @@ bbf_inputs = [x1, x2]
 #This needs to be np array so we can do vector multiplication
 bbf_evaluations = np.array([bbf(x1), bbf(x2)])
 
+#print get_next_input(bbf_inputs, bbf_evaluations, domain)
+#sys.exit()
 #Our main loop to go through every time we evaluate a new point, until we have exhausted our allowed 
 #   black box function evaluations.
 for bbf_evaluation_i in range(2, bbf_evaluation_n):
@@ -134,27 +129,48 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
     test_variances = np.zeros(shape=(n))
     test_values = np.zeros(shape=(n))
 
-    for test_input_i, test_input in enumerate(domain):
-        #Generate our covariance matrices and vectors
-        training_cov_m = get_cov_matrix(bbf_inputs, covariance_function)#K
-        
-        #Clip a small amount so we don't have singular matrix
-        training_cov_m = training_cov_m + (np.eye(training_cov_m.shape[0])*1e-7)
-        training_cov_m_inv = np.linalg.inv(training_cov_m)#K^-1
-        test_cov = get_cov_vector(bbf_inputs, test_input, covariance_function)#K*
-        test_cov_T = test_cov.transpose()#K*T
-        test_cov_diag = covariance_function.evaluate(test_input, test_input)#K**
+    #Generate our covariance matrices and vectors with theano backend
+    training_cov_m = get_cov_matrix(bbf_inputs, covariance_function)#K
+    
+    #Clip a small amount so we don't have singular matrix
+    training_cov_m = training_cov_m + (np.eye(training_cov_m.shape[0])*1e-7)
 
-        #Compute test mean using our Multivariate Gaussian Theorems
-        #print test_cov_T.shape, training_cov_m_inv.shape, bbf_evaluations.shape
-        test_mean = np.dot(np.dot(test_cov_T, training_cov_m_inv), bbf_evaluations)
+    #Invert
+    training_cov_m_inv = theano_matrix_inv(training_cov_m)#K^-1
 
-        #Compute test variance using our Multivariate Gaussian Theorems
-        test_variance = test_cov_diag - np.dot(np.dot(test_cov_T, training_cov_m_inv), test_cov)
+    #Get matrix by getting our vectors for each test point and combining
+    test_cov_T = np.array([get_cov_vector(bbf_inputs, test_input, covariance_function) for test_input in domain])#K*
+    test_cov = test_cov_T.transpose()#K*T
+    
+    #Get each diag for each test input
+    test_cov_diag = np.array([covariance_function.evaluate(test_input, test_input) for test_input in domain])#K**
 
-        #Store them for use with our acquisition function
-        test_means[test_input_i] = test_mean
-        test_variances[test_input_i] = test_variance + 0.01
+    #Compute test mean using our Multivariate Gaussian Theorems
+    #print test_cov.shape, test_cov_T.shape, training_cov_m_inv.shape, bbf_evaluations.shape
+    #test_mean = np.dot(np.dot(test_cov_T, training_cov_m_inv), bbf_evaluations)
+    test_means = get_test_means(test_cov_T, training_cov_m_inv, bbf_evaluations)
+    
+    """
+    print test_means
+    print test_means.shape
+    print test_cov_diag.shape, test_cov_T.shape, training_cov_m_inv.shape, test_cov.shape
+    """
+    #Compute test variance using our Multivariate Gaussian Theorems
+    #test_variance = test_cov_diag - np.dot(np.dot(test_cov_T, training_cov_m_inv), test_cov)
+    test_variances = get_test_variances(test_cov_diag, test_cov_T, training_cov_m_inv, test_cov)
+
+    #Store them for use with our acquisition function
+    #test_means[test_input_i] = test_mean
+    #test_variances[test_input_i] = test_variance + 0.01
+    """
+    print test_variances
+    print test_variances[0]
+    print test_variances[-1]
+    print test_variances[:][0]
+    print test_variances[:][-1]
+    print test_variances.shape
+    sys.exit()
+    """
 
     #Now that we have all our means u* and variances c* for every point in the domain,
     #Move on to determining next point to evaluate using our acquisition function
