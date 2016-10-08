@@ -37,10 +37,10 @@ def bbf(x):
 
 def bbf(x):
     #return -(x-2)**2
-    return np.exp(-(x-2)**2) + np.exp(-((x-6)**2)/10.0) + (1.0/(x**2 + 1))
-    #return np.cos(x[0])*np.cos(x[1])*np.exp(-((x[0]-np.pi)**2 + (x[1]-np.pi)**2))
-    #return -(x[0]-2)**2 - (x[1]-3)**2 + 4
-    #return -(x[0]-2)**2 - (x[1]-3)**2 - (x[2]-1)**2+ 4
+    #return np.exp(-(x-2)**2) + np.exp(-((x-6)**2)/10.0) + (1.0/(x**2 + 1))
+    return [np.cos(x[0])*np.cos(x[1])*np.exp(-((x[0]-np.pi)**2 + (x[1]-np.pi)**2))]
+    #return [-(x[0]-2)**2 - (x[1]-3)**2 + 4]
+    #return [-(x[0]-2)**2 - (x[1]-3)**2 - (x[2]-1)**2+ 4]
 
 #For efficiency comparisons
 start_time = time.time() 
@@ -56,7 +56,7 @@ bbf_evaluation_n = 20
 
 #Choice of acquisition function and af parameters
 confidence_interval = 1.5 
-acquisition_function = upper_confidence_bound(confidence_interval)
+acquisition_function = probability_improvement(confidence_interval)
 
 #Choice of covariance function and cf parameters
 lengthscale = 1.0
@@ -64,10 +64,10 @@ v = [5/2.0]
 covariance_function = matern2(lengthscale, v)
 
 #Initialize ranges for each parameter into a resulting matrix
-hps = [HyperParameter(0, 10)]
+hps = [HyperParameter(0, 10), HyperParameter(0, 10)]
 
 #UI settings
-plot_results = True
+plot_results = False
 plot_3d_results = False
 
 """END TUNABLE PARAMETERS"""
@@ -146,9 +146,10 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
     test_cov_diag = np.array([covariance_function.evaluate(test_input, test_input) for test_input in domain])#K**
 
     #Compute test mean using our Multivariate Gaussian Theorems
+    #We flatten so we don't have shape (100, 1), but shape (100,)
     #print test_cov.shape, test_cov_T.shape, training_cov_m_inv.shape, bbf_evaluations.shape
     #test_mean = np.dot(np.dot(test_cov_T, training_cov_m_inv), bbf_evaluations)
-    test_means = get_test_means(test_cov_T, training_cov_m_inv, bbf_evaluations)
+    test_means = get_test_means(test_cov_T, training_cov_m_inv, bbf_evaluations).flatten()
     
     """
     print test_means
@@ -163,6 +164,7 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
     #test_means[test_input_i] = test_mean
     #test_variances[test_input_i] = test_variance + 0.01
     """
+    print (test_variances.transpose() == test_variances).all()#Is it symmetric?
     print test_variances
     print test_variances[0]
     print test_variances[-1]
@@ -187,6 +189,7 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
     #Make these in seperate file once we have 3d working
     if plot_results:
         plt.plot(domain_x, test_means)
+        #plt.plot(domain_x, test_variances, 'r')
         plt.plot(bbf_inputs, bbf_evaluations, 'bo')
         plt.plot(domain_x, test_means+test_variances, 'r')
         plt.plot(domain_x, test_means-test_variances, 'r')
@@ -195,6 +198,10 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
             orientation='portrait', papertype=None, format=None,
             transparent=False, bbox_inches='tight', pad_inches=0.1,
             frameon=None)
+        plt.axis([0, 10, 0, 2])
+        #plt.show()
+        #sys.exit()
+
         plt.gcf().clear()
     elif plot_3d_results:
         if bbf_evaluation_i == bbf_evaluation_n-1:
@@ -224,6 +231,8 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
 
     #Get the index of the next input to evaluate in our black box function
     #Since acquisition functions return argmax values
+    #print test_means.shape, test_variances.shape, (test_means.flatten()-test_variances).shape
+    #sys.exit()
     next_input_i = acquisition_function.evaluate(test_means, test_variances, test_values)
 
     #Add our new input
