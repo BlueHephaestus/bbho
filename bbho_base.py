@@ -8,9 +8,13 @@ import itertools#For Cartesian product
 
 #We initialize the following here so we don't have to when we call the functions that use them.
 
-#Matrix inverse
+"Matrix inverse"
 m = T.matrix()
 invert_matrix = theano.function([m], matrix_inverse(m))
+
+"Adds one axis if we are hoping to use the Prob Density function with vectors instead of matrices, as it's designed"
+v = T.vector()
+vector_to_column = theano.function([v], v.dimshuffle(0, 'x'))
 
 #Multivariate covariance mean & variance
 test_cov = T.matrix()
@@ -20,10 +24,13 @@ training_cov_m_inv = T.matrix()
 bbf_evaluations = T.matrix()
 
 #Gaussian Distribution vars
-inputs = T.matrix()
-means = T.matrix()
-stddevs = T.vector()
-variances = T.matrix()
+inputs_m = T.matrix()
+means_m = T.matrix()
+variances_m = T.matrix()
+
+inputs_v = T.vector()
+means_v = T.vector()
+variances_v = T.vector()
 
 "Multivariate covariance mean"
 compute_mv_mean = theano.function([test_cov_T, training_cov_m_inv, bbf_evaluations], 
@@ -37,18 +44,30 @@ compute_mv_variance = theano.function([test_cov_diag, test_cov_T, training_cov_m
                 allow_input_downcast=True
             )
 
-"Probability Density Function / Gaussian Distribution Function"
-probability_density_function = theano.function([inputs, means, variances], 
-                outputs = (T.exp(-(T.sqr(inputs-means))/(2*variances)) / (T.sqrt(2*variances*np.pi))),
+
+"Probability Density Function / Gaussian Distribution Function (for matrix input)"
+probability_density_function_m = theano.function([inputs_m, means_m, variances_m], 
+                outputs = (T.exp(-(T.sqr(inputs_m-means_m))/(2*variances_m)) / (T.sqrt(2*variances_m*np.pi))),
                 allow_input_downcast=True
             )
 
+"Probability Density Function / Gaussian Distribution Function (for vector input)"
+probability_density_function_v = theano.function([inputs_v, means_v, variances_v], 
+                outputs = (T.exp(-(T.sqr(inputs_v-means_v))/(2*variances_v)) / (T.sqrt(2*variances_v*np.pi))),
+                allow_input_downcast=True
+            )
 
-def gaussian_distribution(inputs, means, variances):
+def gaussian_distribution_m(inputs, means, variances):
+    #For matrices
     #Gets input x, means, and variances
     #Returns vector or scalar from input
-    #return (np.exp(-((x-mean)**2)/(2*stddev))) / (np.sqrt(2*stddev*np.pi))
-    return probability_density_function(inputs, means, variances)
+    return probability_density_function_m(inputs, means, variances)
+
+def gaussian_distribution_v(inputs, means, variances):
+    #For vectors
+    #Gets input x, means, and variances
+    #Returns vector or scalar from input
+    return probability_density_function_v(inputs, means, variances)
 
 def cdf(inputs, means, variances):
     #Get values to compute cdf over
@@ -63,7 +82,7 @@ def cdf(inputs, means, variances):
     means = np.array([np.repeat(mean, inputs.shape[1]) for mean in means])
     variances = np.array([np.repeat(mean, inputs.shape[1]) for variance in variances])
 
-    dist_values = gaussian_distribution(inputs, means, variances)
+    dist_values = gaussian_distribution_m(inputs, means, variances)
     #dist_values = gaussian_distribution(inputs, means, variances)
     
     #Equivalent to the last element of cumulative sum
@@ -95,6 +114,9 @@ def get_cov_vector(f, test_f, cov):
 
 def cartesian_product(vectors):
     return [np.array(i) for i in itertools.product(*vectors)]
+
+def convert_vector_to_column(v):
+    return vector_to_column(v)
 
 def theano_matrix_inv(m):
     return invert_matrix(m)

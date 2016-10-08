@@ -3,13 +3,13 @@ import numpy as np
 import bbho_base
 from bbho_base import *
 
-#Initialize the theano functions here so we don't have to initialize 
-    #them every time we call the function(once every evaluation)
-
 means = T.vector()
+stddevs = T.vector()
 variances = T.vector()
 values = T.vector()
 cdfs = T.vector()
+dist_values = T.vector()
+normal_dist_values = T.vector()
 confidence_interval = T.scalar()
 
 class acquisition_function(object):
@@ -40,13 +40,19 @@ class expected_improvement(acquisition_function):
         #We assign this so we don't compute it twice in our function
         self.stddev = theano.function([variances], T.sqrt(variances), allow_input_downcast=True)
 
-        self.f = theano.function([means, stddevs, variances, values], 
-                    outputs = T.argmax(stddevs * (gaussian_distribution(values, means, variances) * cdf(values, means, stddevs) + gaussian_distribution(values, 0, 1))),
+        self.f = theano.function([stddevs, dist_values, cdfs, normal_dist_values], 
+                    outputs = T.argmax(stddevs * dist_values * cdfs + normal_dist_values),
                     allow_input_downcast=True
                     )
 
     def evaluate(self, means, variances, values):
-        return self.f(means, self.stddev(variances), variances, values)
+        #We have to format it like this so that our cdf function does not get called until we have means, variances, and values
+        #Unlike if we included this in the theano function, where it would be called with the initialization of the function
+        dist_values = gaussian_distribution_v(values, means, variances)
+        cdfs = cdf(values, means, variances)
+        normal_dist_values = gaussian_distribution_v(values, np.zeros_like(values), np.ones_like(values))
+
+        return self.f(self.stddev(variances), dist_values, cdfs, normal_dist_values)
 
 
 class upper_confidence_bound(acquisition_function):
