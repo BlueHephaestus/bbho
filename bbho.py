@@ -37,8 +37,8 @@ def bbf(x):
 
 def bbf(x):
     #return -(x-2)**2
-    #return np.exp(-(x-2)**2) + np.exp(-((x-6)**2)/10.0) + (1.0/(x**2 + 1))
-    return [np.cos(x[0])*np.cos(x[1])*np.exp(-((x[0]-np.pi)**2 + (x[1]-np.pi)**2))]
+    return np.exp(-(x-2)**2) + np.exp(-((x-6)**2)/10.0) + (1.0/(x**2 + 1))
+    #return [np.cos(x[0])*np.cos(x[1])*np.exp(-((x[0]-np.pi)**2 + (x[1]-np.pi)**2))]
     #return [-(x[0]-2)**2 - (x[1]-3)**2 + 4]
     #return [-(x[0]-2)**2 - (x[1]-3)**2 - (x[2]-1)**2+ 4]
 
@@ -46,7 +46,7 @@ def bbf(x):
 start_time = time.time() 
         
 #Number of evaluated input points / level of detail
-detail_n = 30
+detail_n = 100
 
 #If we want the highest point or lowest point
 maximizing = True
@@ -56,7 +56,7 @@ bbf_evaluation_n = 20
 
 #Choice of acquisition function and af parameters
 confidence_interval = 1.5 
-acquisition_function = probability_improvement(confidence_interval)
+acquisition_function = upper_confidence_bound(confidence_interval)
 
 #Choice of covariance function and cf parameters
 lengthscale = 1.0
@@ -64,10 +64,10 @@ v = [5/2.0]
 covariance_function = matern2(lengthscale, v)
 
 #Initialize ranges for each parameter into a resulting matrix
-hps = [HyperParameter(0, 10), HyperParameter(0, 10)]
+hps = [HyperParameter(0, 10)]
 
 #UI settings
-plot_results = False
+plot_results = True
 plot_3d_results = False
 
 """END TUNABLE PARAMETERS"""
@@ -183,7 +183,7 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
         test_values = test_means - test_variances
 
     #Set the filename
-    fname = "results/%s" % str(bbf_evaluation_i)
+    fname = "results/%02d" % bbf_evaluation_i
 
     #Plot our updates
     #Make these in seperate file once we have 3d working
