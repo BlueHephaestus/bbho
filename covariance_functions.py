@@ -87,6 +87,9 @@ class matern1(covariance_function):
         return np.nan_to_num(((2**(1-self.v))/(ss.gamma(self.v))) * ((np.sqrt(2*self.v) * (dist/self.lengthscale))**self.v) * ss.kv(self.v, (np.sqrt(2*self.v) * (dist/self.lengthscale))))
 
 class matern2(covariance_function):
+    """However, this one works perfectly, and is so far the best one. 
+        Credit to the "Practical Bayesian Optimization of Machine Learning" Research paper,
+        for including this covariance function."""
 
     def __init__(self, lengthscale, v):
         covariance_function.__init__(self, lengthscale, v)
