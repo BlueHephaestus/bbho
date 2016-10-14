@@ -13,7 +13,8 @@ def graph_output(plot_2d_results, plot_3d_results, bbf_evaluation_i, bbf_evaluat
   if plot_2d_results:
       plt.plot(domain_x, test_means)
       #plt.plot(domain_x, test_variances, 'r')
-      plt.plot(bbf_inputs, bbf_evaluations, 'bo')
+      #plt.plot(bbf_inputs, bbf_evaluations, 'bo')
+      plt.scatter(bbf_inputs, bbf_evaluations, marker='o', c='b', s=100.0, label="Function Evaluations")
       plt.plot(domain_x, val1, 'r')
       plt.plot(domain_x, val2, 'r')
       #plt.plot(domain_x, bbf(domain_x), 'y')
@@ -21,6 +22,10 @@ def graph_output(plot_2d_results, plot_3d_results, bbf_evaluation_i, bbf_evaluat
           orientation='portrait', papertype=None, format=None,
           transparent=False, bbox_inches='tight', pad_inches=0.1,
           frameon=None)
+      plt.xlabel("X-Axis")
+      plt.ylabel("Y-Axis")
+
+      plt.legend(bbox_to_anchor=(1, 1), loc=1, borderaxespad=0.)
       plt.axis([0, 10, 0, 2])
       #plt.show()
       plt.gcf().clear()
