@@ -10,11 +10,11 @@ import itertools#For Cartesian product
 
 "Matrix inverse"
 m = T.matrix()
-invert_matrix = theano.function([m], matrix_inverse(m))
+invert_matrix = theano.function([m], matrix_inverse(m), allow_input_downcast=True)
 
 "Adds one axis if we are hoping to use the Prob Density function with vectors instead of matrices, as it's designed"
 v = T.vector()
-vector_to_column = theano.function([v], v.dimshuffle(0, 'x'))
+vector_to_column = theano.function([v], v.dimshuffle(0, 'x'), allow_input_downcast=True)
 
 #Multivariate covariance mean & variance
 test_cov = T.matrix()
@@ -39,8 +39,18 @@ compute_mv_mean = theano.function([test_cov_T, training_cov_m_inv, bbf_evaluatio
             )
 
 "Multivariate covariance variance"
+"""
+We only need the diagonal axis at completion.
+If we do the entire dot product, it's often with arrays of size
+nx2, 2xn, which results in an array of size nxn, 
+but since n is often huge this can result in an array that would take up
+exobytes of storage. So, we do it like this so we only have to get a vector result.
+
+sum(A * B^T, axis=1)
+"""
+
 compute_mv_variance = theano.function([test_cov_diag, test_cov_T, training_cov_m_inv, test_cov], 
-                outputs = test_cov_diag - T.diag(T.dot(T.dot(test_cov_T, training_cov_m_inv), test_cov)),
+                outputs = test_cov_diag - T.sum(T.dot(test_cov_T, training_cov_m_inv) * test_cov.T, axis=1),
                 allow_input_downcast=True
             )
 
@@ -126,3 +136,9 @@ def get_test_means(test_cov_T, training_cov_m_inv, bbf_evaluations):
 
 def get_test_variances(test_cov_diag, test_cov_T, training_cov_m_inv, test_cov):
     return compute_mv_variance(test_cov_diag, test_cov_T, training_cov_m_inv, test_cov)
+
+def exp_decay(initial, rate, iteration):
+    #Do our k*e^(r*t) exponential decay
+    return initial*np.exp(rate*iteration)
+
+

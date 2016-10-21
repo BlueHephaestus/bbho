@@ -49,8 +49,9 @@ maximizing = True
 bbf_evaluation_n = 20
 
 #Choice of acquisition function and af parameters
-confidence_interval = 1.5 
-acquisition_function = upper_confidence_bound(confidence_interval)
+initial_confidence_interval = 1.5 
+confidence_interval_decay_rate = -4.0/bbf_evaluation_n
+acquisition_function = upper_confidence_bound()
 
 #Choice of covariance function and cf parameters
 lengthscale = 1.0
@@ -118,6 +119,10 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
     sys.stdout.write("\rDetermining Point #%i" % (bbf_evaluation_i+1))
     sys.stdout.flush()
     #print "Determining Point #%i" % (bbf_evaluation_i+1)
+
+    #Decay our confidence interval by decay rate, 
+    #   and adjust our evaluation index back accordingly to account for our first two random inputs
+    confidence_interval = exp_decay(initial_confidence_interval, confidence_interval_decay_rate, bbf_evaluation_i-2)
 
     #Since we reset this every time we generate through the domain
     test_means = np.zeros(shape=(n))
