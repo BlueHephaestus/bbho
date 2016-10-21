@@ -45,7 +45,7 @@ If we do the entire dot product, it's often with arrays of size
 nx2, 2xn, which results in an array of size nxn, 
 but since n is often huge this can result in an array that would take up
 exobytes of storage. So, we do it like this so we only have to get a vector result.
-
+ 
 sum(A * B^T, axis=1)
 """
 
