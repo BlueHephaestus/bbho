@@ -1,5 +1,7 @@
 """
-Read all the details on the github README (soon to be blog) here:
+Read all the details in my blog post here:
+    https://dark-element.com/2016/10/10/bayesian-optimization-of-black-box-functions/
+Or the github repo here:
     https://github.com/DarkElement75/bbho
 
 Made by Blake Edwards / Dark Element
