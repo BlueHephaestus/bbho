@@ -7,7 +7,7 @@ Or the github repo here:
 Made by Blake Edwards / Dark Element
 """
 
-import sys, time
+import sys, time, itertools
 
 import numpy as np
 
@@ -31,28 +31,51 @@ from bbho_base import *
 import black_box_functions
 
 """START TUNABLE PARAMETERS"""
+"""
+POLICY GRADIENT IMPLEMENTATION
 #We use our policy gradient black box function
 #Configure specifics in the black_box_functions file and so on
 epochs = 400
 timestep_n = 200
-run_count = 3
+run_count = 5
 bbf = black_box_functions.policy_gradient(epochs, timestep_n, run_count)
+"""
+
+"""
+DENNIS IMPLEMENTATION
+#We use our DENNIS+LIRA black box function
+#Configure specifics in the black_box_functions file and so on
+epochs = 1000
+run_count = 3
+bbf = black_box_functions.dennis(epochs, run_count)
+"""
+
+"""
+LIRA IMPLEMENTATION
+"""
+#We use our DENNIS+LIRA black box function
+#Configure specifics in the black_box_functions file and so on
+epochs = 2
+run_count = 2
+bbf = black_box_functions.lira(epochs, run_count)
 
 #For efficiency comparisons
 start_time = time.time() 
         
 #Number of evaluated input points / level of detail
+#Note: increasing this causes massive increases in the computations required for an evaluation. 
 detail_n = 10
 
 #If we want the highest point or lowest point
 maximizing = True
 
 #Number of bbf evaluations allowed to perform before ending optimization
-bbf_evaluation_n = 20
+bbf_evaluation_n = 40
 
 #Choice of acquisition function and af parameters
 initial_confidence_interval = 1.5 
-confidence_interval_decay_rate = -4.0/bbf_evaluation_n
+#confidence_interval_decay_rate = -4.0/bbf_evaluation_n
+confidence_interval_decay_rate = 0
 acquisition_function = upper_confidence_bound()
 
 #Choice of covariance function and cf parameters
@@ -61,10 +84,9 @@ v = [5/2.0]#For matern1(not currently functional)
 covariance_function = matern2(lengthscale, v)
 
 #Initialize ranges for each parameter into a resulting matrix
-#Mini batch size, learning rate, learning rate decay rate, discount factor
 #Our level of detail / detail_n determines our step size for each
-hps = [HyperParameter(0, 100), HyperParameter(1, 10), HyperParameter(0, 10), HyperParameter(0, 1)]
-#hps = [HyperParameter(0, 100), HyperParameter(0, 10)]
+#Mini batch size, regularization rate, dropout percentage
+hps = [HyperParameter(0, 100), HyperParameter(1, 11), HyperParameter(0, 1)]
 
 #UI/graph settings
 plot_2d_results = False
@@ -79,8 +101,13 @@ independent_domains = np.array([np.arange(hp.min, hp.max, ((hp.max-hp.min)/float
 #Get the total number of outputs as n^r
 n = detail_n**len(hps)
 
-#Get the cartesian product of all vectors contained to get entire multidimensional domain
-domain = cartesian_product(independent_domains)
+"""
+We make a copy so we have something that is not shuffled to cartesian product through from now on.
+    Later on, when we Get the cartesian product of all vectors contained to get entire multidimensional domain,
+    We have to restart over again, as iterators can only loop through it, and in order to restart we have to must initialize a new iterator.
+    So, that's why you'll see a lot of itertools.product(*domain) in here.
+"""
+domain = np.copy(independent_domains)
 
 #Get our axis vectors if plotting
 if plot_2d_results:
@@ -113,14 +140,15 @@ test_domain = T.matrix()
 bbf_inputs = [x1, x2]
 
 #This needs to be np array so we can do vector multiplication
+print "Evaluating Initial Random Inputs"
 bbf_evaluations = np.array([bbf.evaluate(0, bbf_evaluation_n, x1), bbf.evaluate(1, bbf_evaluation_n, x2)])
 
 #Our main loop to go through every time we evaluate a new point, until we have exhausted our allowed 
 #   black box function evaluations.
 for bbf_evaluation_i in range(2, bbf_evaluation_n):
-    sys.stdout.write("\rDetermining Point #%i" % (bbf_evaluation_i+1))
-    sys.stdout.flush()
-    #print "Determining Point #%i" % (bbf_evaluation_i+1)
+    #sys.stdout.write("\rDetermining Point #%i" % (bbf_evaluation_i+1))
+    #sys.stdout.flush()
+    print "Determining Point #%i" % (bbf_evaluation_i+1)
 
     #Decay our confidence interval by decay rate, 
     #   and adjust our evaluation index back accordingly to account for our first two random inputs
@@ -141,11 +169,11 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
     training_cov_m_inv = theano_matrix_inv(training_cov_m)#K^-1
 
     #Get matrix by getting our vectors for each test point and combining
-    test_cov_T = np.array([get_cov_vector(bbf_inputs, test_input, covariance_function) for test_input in domain])#K*
+    test_cov_T = np.array([get_cov_vector(bbf_inputs, np.array(test_input), covariance_function) for test_input in itertools.product(*domain)])#K*
     test_cov = test_cov_T.transpose()#K*T
     
     #Get each diag for each test input
-    test_cov_diag = np.array([covariance_function.evaluate(test_input, test_input) for test_input in domain])#K**
+    test_cov_diag = np.array([covariance_function.evaluate(np.array(test_input), np.array(test_input)) for test_input in itertools.product(*domain)])#K**
 
     #Compute test mean using our Multivariate Gaussian Theorems
     #We flatten so we don't have shape (100, 1), but shape (100,)
@@ -170,10 +198,11 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
 
     #Get the index of the next input to evaluate in our black box function
     #Since acquisition functions return argmax values
-    next_input_i = acquisition_function.evaluate(test_means, test_variances, test_values)
+    next_input_i = acquisition_function.evaluate(test_means, test_variances, test_values, confidence_interval)
 
     #Add our new input
-    next_input = domain[next_input_i]
+    next_input = get_cartesian_product_element_by_index(itertools.product(*domain), next_input_i)
+    #next_input = domain[next_input_i]
     #print "\tNew point: {}".format(next_input)
     bbf_inputs.append(np.array(next_input))
 
@@ -190,6 +219,6 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
 
 best_input = bbf_inputs[np.argmax(bbf_evaluations)]
 print ""
-print bbf_evaluations
+print bbf_inputs, bbf_evaluations
 print "Best input found after {} iterations: {}".format(bbf_evaluation_n, best_input)
 print "Time to run: %f" % (time.time() - start_time)
