@@ -55,8 +55,8 @@ LIRA IMPLEMENTATION
 """
 #We use our DENNIS+LIRA black box function
 #Configure specifics in the black_box_functions file and so on
-epochs = 2
-run_count = 2
+epochs = 6000
+run_count = 3
 bbf = black_box_functions.lira(epochs, run_count)
 
 #For efficiency comparisons
@@ -64,7 +64,7 @@ start_time = time.time()
         
 #Number of evaluated input points / level of detail
 #Note: increasing this causes massive increases in the computations required for an evaluation. 
-detail_n = 10
+detail_n = 100
 
 #If we want the highest point or lowest point
 maximizing = True
@@ -123,7 +123,7 @@ for independent_domain in independent_domains:
     np.random.shuffle(independent_domain)
 
 #Get our different values easily by transposing
-x1, x2 = independent_domains.transpose()[:2]
+x1, x2, x3, x4, x5, x6 = independent_domains.transpose()[:6]
 
 #Known inputs
 training_inputs = T.vector()
