@@ -86,7 +86,7 @@ covariance_function = matern2(lengthscale, v)
 #Initialize ranges for each parameter into a resulting matrix
 #Our level of detail / detail_n determines our step size for each
 #Mini batch size, regularization rate, dropout percentage
-hps = [HyperParameter(0, 100), HyperParameter(1, 11), HyperParameter(0, 1)]
+hps = [HyperParameter(0, 100), HyperParameter(0, 5), HyperParameter(0, 1)]
 
 #UI/graph settings
 plot_2d_results = False
