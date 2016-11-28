@@ -51,11 +51,8 @@ class lira(object):
         self.configurer = lira_configurer.Configurer(epochs, run_count)
 
     def evaluate(self, bbf_evaluation_i, bbf_evaluation_n, next_input):
-
-        import tensorflow as tf
-        with tf.Session().as_default():
-            config_output = self.configurer.run_config(next_input[0], next_input[1], next_input[2])
-            config_avg_output = np.mean(config_output)
-            return [config_avg_output]
+        config_output = self.configurer.run_config(next_input[0], next_input[1], next_input[2])
+        config_avg_output = np.mean(config_output)
+        return [config_avg_output]
 
 
