@@ -19,7 +19,7 @@ BBHO (pronounced BeeBo because names are much more fun) is a Black Box Optimizat
 #Configuration
 
 1. In my lira black box function, I initialize it with `epochs` and `run_count` variables. These represent the number of times to loop over the training set, and the number of times to run an entire training iteration, respectively. As said in the Installation instructions, you can change the initialization to respect whatever your black box function may be, but you do have to initialize what you are optimizing in the beginning of `bbho.py`.
-2. After this, the remaining parameters have to do with the optimization. 
+2. After this, the remaining parameters have to do with the optimization:
 
 `detail_n`: the number of intervals for each hyper parameter optimized, so that if you assign the `hps` variable later to be `[HyperParameter(0, 100)]`, and set `detail_n = 100`, that hyper parameter's range will be `1, 2, 3, ... 99`. If you were to set `detail_n = 50`, it would be something like `1, 3, 5, ..., 49`, and so on.
 
