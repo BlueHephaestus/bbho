@@ -4,7 +4,7 @@ Used to setup our other programs for use with BBHO.
 
 __init__ can take whatever argumenets you choose,
     as you can merely change how it is called in bbho.py,
-evaluate() however must take the same.
+evaluate() however must take the same, with next_input being a list of new parameters.
 
 -Blake Edwards / Dark Element
 """
