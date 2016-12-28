@@ -34,6 +34,5 @@ BBHO (pronounced BeeBo because names are much more fun) is a Black Box Optimizat
 `hps`: mentioned earlier, this is a list of Hyper Parameter classes, found in `hyperparameter.py`. You should specify the Hyper Parameters according to the syntax `HyperParameter(min, max)`, with `min`, `max` according to the range of that hyper parameter. You should format the number of these according to the number of arguments your handler is ready for. If I was prepared for mini batch size and regularization rate in my handler, I might have `hps = [HyperParameter(0, 50), HyperParameter(0, 1)]` 
 
 
-
-Otherwise, good luck, have fun!
+Feel free to contact me with any questions or help, and Good luck, have fun!
 
