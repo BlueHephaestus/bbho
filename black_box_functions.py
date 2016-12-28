@@ -12,6 +12,7 @@ evaluate() however must take the same.
 import sys
 
 import numpy as np
+import tensorflow as tf
 
 #Currently only on cartpole, will push to more general directory when finished
 sys.path.append("../openai/classic_control/cartpole/src")
@@ -19,8 +20,7 @@ sys.path.append("../openai/classic_control/cartpole/src")
 import policy_gradient_configurer
 
 #For LIRA/DENNIS
-sys.path.append("../dennis/dennis5/src")
-import dennis_configurer
+sys.path.append("../dennis/dennis6/src")#THIS NEEDS TO BE UPDATED
 
 sys.path.append("../tuberculosis_project/lira/lira1/src")
 import lira_configurer
@@ -37,6 +37,8 @@ class policy_gradient(object):
         config_avg_output = np.mean(config_output)
         return [config_avg_output]
 
+"""
+NEEDS TO BE UPDATED
 class dennis(object):
     def __init__(self, epochs, run_count):
         self.configurer = dennis_configurer.Configurer(epochs, run_count)
@@ -45,14 +47,16 @@ class dennis(object):
         config_output = self.configurer.run_config(next_input[0], next_input[1], next_input[2], next_input[3])
         config_avg_output = np.mean(config_output)
         return [config_avg_output]
+"""
         
 class lira(object):
     def __init__(self, epochs, run_count):
         self.configurer = lira_configurer.Configurer(epochs, run_count)
 
     def evaluate(self, bbf_evaluation_i, bbf_evaluation_n, next_input):
-        config_output = self.configurer.run_config(next_input[0], next_input[1], next_input[2])
-        config_avg_output = np.mean(config_output)
-        return [config_avg_output]
 
-
+        #So we make sure that we don't lose available memory with each run (due to small Keras bug I believe)
+        with tf.Session().as_default():
+            config_output = self.configurer.run_config(next_input)
+            config_avg_output = np.mean(config_output)
+            return [config_avg_output]

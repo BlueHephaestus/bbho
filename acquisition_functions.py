@@ -14,19 +14,20 @@ confidence_interval = T.scalar()
 
 class acquisition_function(object):
 
-    def __init__(self, confidence_interval):
-        self.confidence_interval = confidence_interval
+    def __init__(self):
+        #Currently none to init with
+        pass
 
 class probability_improvement(acquisition_function):
 
-    def __init__(self, confidence_interval):
-        acquisition_function.__init__(self, confidence_interval)
+    def __init__(self):
+        acquisition_function.__init__(self)
         self.f = theano.function([cdfs], 
                     outputs = T.argmax(cdfs),
                     allow_input_downcast=True
                     )
 
-    def evaluate(self, means, variances, values):
+    def evaluate(self, means, variances, values, confidence_interval):
         #We have to format it like this so that our cdf function does not get called until we have means, variances, and values
         #Unlike if we included this in the theano function, where it would be called with the initialization of the function
         cdfs = cdf(values, means, variances)
@@ -34,8 +35,8 @@ class probability_improvement(acquisition_function):
 
 class expected_improvement(acquisition_function):
 
-    def __init__(self, confidence_interval):
-        acquisition_function.__init__(self, confidence_interval)
+    def __init__(self):
+        acquisition_function.__init__(self)
         
         #We assign this so we don't compute it twice in our function
         self.stddev = theano.function([variances], T.sqrt(variances), allow_input_downcast=True)
@@ -45,7 +46,7 @@ class expected_improvement(acquisition_function):
                     allow_input_downcast=True
                     )
 
-    def evaluate(self, means, variances, values):
+    def evaluate(self, means, variances, values, confidence_interval):
         #We have to format it like this so that our cdf function does not get called until we have means, variances, and values
         #Unlike if we included this in the theano function, where it would be called with the initialization of the function
         dist_values = gaussian_distribution_v(values, means, variances)
@@ -57,13 +58,13 @@ class expected_improvement(acquisition_function):
 
 class upper_confidence_bound(acquisition_function):
 
-    def __init__(self, confidence_interval):
-        acquisition_function.__init__(self, confidence_interval)
-        self.f = theano.function([means, variances], 
-                    outputs = T.argmax(means + self.confidence_interval * T.sqrt(variances)),
+    def __init__(self):
+        acquisition_function.__init__(self)
+        self.f = theano.function([means, variances, confidence_interval], 
+                    outputs = T.argmax(means + confidence_interval * T.sqrt(variances)),
                     allow_input_downcast=True
                     )
    
-    def evaluate(self, means, variances, values):
-        return self.f(means, variances)
+    def evaluate(self, means, variances, values, confidence_interval):
+        return self.f(means, variances, confidence_interval)
 

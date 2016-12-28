@@ -7,3 +7,4 @@ BBHO (pronounced BeeBo because names are much more fun) is a Black Box Optimizat
 ###[Resources & Sources where I learned what I needed to go from fundamentals to this](https://dark-element.com/2016/10/14/bayesian-optimization-of-black-box-functions-appendix-and-sources-resources/#resources-sources)
 
 Otherwise, good luck, have fun!
+

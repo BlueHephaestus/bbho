@@ -54,6 +54,14 @@ compute_mv_variance = theano.function([test_cov_diag, test_cov_T, training_cov_m
                 allow_input_downcast=True
             )
 
+"""
+I had a brief moment where I thought I was using Gaussian Distributions incorrectly 
+    to get the correct result. However, when we get the cumulative distribution,
+    or the probabilities up to a point, or the probability of a point; any time we
+    need the probability of some input wrt a Gaussian Distribution. For this, we 
+    obviously use the probability density function, that returns the probability of
+    a given input point. So, you can find the pretty latex version under wikipedia.
+"""
 
 "Probability Density Function / Gaussian Distribution Function (for matrix input)"
 probability_density_function_m = theano.function([inputs_m, means_m, variances_m], 
@@ -88,7 +96,7 @@ def cdf(inputs, means, variances):
     inputs = np.array([np.arange(input-100, input, .1) for input in inputs])
 
     #We just repeat these over the axis we are getting different inputs on, which 
-        #is why they are repeated according to inputs.shape[1]
+    #   is why they are repeated according to inputs.shape[1]
     means = np.array([np.repeat(mean, inputs.shape[1]) for mean in means])
     variances = np.array([np.repeat(mean, inputs.shape[1]) for variance in variances])
 
@@ -96,7 +104,6 @@ def cdf(inputs, means, variances):
     #dist_values = gaussian_distribution(inputs, means, variances)
     
     #Equivalent to the last element of cumulative sum
-    #numpy sum is faster 
     return np.sum(dist_values, axis=1)
 
 def get_cov_matrix(f, cov):
@@ -122,8 +129,19 @@ def get_cov_vector(f, test_f, cov):
 
     return f_v
 
+"""
 def cartesian_product(vectors):
     return [np.array(i) for i in itertools.product(*vectors)]
+"""
+
+def get_cartesian_product_element_by_index(cp, index):
+    for i, e in enumerate(cp):
+        if i == index:
+            return e
+    else:
+        #Not in the cartesian product
+        return False
+
 
 def convert_vector_to_column(v):
     return vector_to_column(v)

@@ -55,8 +55,8 @@ LIRA IMPLEMENTATION
 """
 #We use our DENNIS+LIRA black box function
 #Configure specifics in the black_box_functions file and so on
-epochs = 6000
-run_count = 3
+epochs = 50
+run_count = 5
 bbf = black_box_functions.lira(epochs, run_count)
 
 #For efficiency comparisons
@@ -64,7 +64,7 @@ start_time = time.time()
         
 #Number of evaluated input points / level of detail
 #Note: increasing this causes massive increases in the computations required for an evaluation. 
-detail_n = 100
+detail_n = 25
 
 #If we want the highest point or lowest point
 maximizing = True
@@ -85,10 +85,10 @@ covariance_function = matern2(lengthscale, v)
 
 #Initialize ranges for each parameter into a resulting matrix
 #Our level of detail / detail_n determines our step size for each
-#Mini batch size, regularization rate, dropout percentage
-hps = [HyperParameter(0, 100), HyperParameter(0, 5), HyperParameter(0, 1)]
+#Mini Batch Size,              Regularization Rate,  Dropout Percentage,   Activation Fn Index,  Cost Function Index
+hps = [HyperParameter(0, 100), HyperParameter(0, 5), HyperParameter(0, 1), HyperParameter(0, 7), HyperParameter(0, 8)]
 
-#UI/graph settings
+#UI/graph settings for testing
 plot_2d_results = False
 plot_3d_results = False
 
@@ -97,6 +97,13 @@ plot_3d_results = False
 #Initialize independent domains of each parameter
 #We will do the cartesian product on the vectors contained here to get our entire sets of multidimensional inputs
 independent_domains = np.array([np.arange(hp.min, hp.max, ((hp.max-hp.min)/float(detail_n))) for hp in hps])
+
+#Make sure we don't have annoying problem where we might get one extra on accident
+for i in range(len(independent_domains)):
+    independent_domains[i] = independent_domains[i][:detail_n]
+
+#Get past annoying problem of it not treating it like a proper matrix
+independent_domains = np.array([np.array(independent_domain) for independent_domain in independent_domains])
 
 #Get the total number of outputs as n^r
 n = detail_n**len(hps)
@@ -123,7 +130,7 @@ for independent_domain in independent_domains:
     np.random.shuffle(independent_domain)
 
 #Get our different values easily by transposing
-x1, x2, x3, x4, x5, x6 = independent_domains.transpose()[:6]
+x1, x2 = independent_domains.transpose()[:2]
 
 #Known inputs
 training_inputs = T.vector()
