@@ -55,16 +55,16 @@ LIRA IMPLEMENTATION
 """
 #We use our DENNIS+LIRA black box function
 #Configure specifics in the black_box_functions file and so on
-epochs = 50
+epochs = 100
 run_count = 5
-bbf = black_box_functions.lira(epochs, run_count)
+bbf = black_box_functions.lira2(epochs, run_count)
 
 #For efficiency comparisons
 start_time = time.time() 
         
 #Number of evaluated input points / level of detail
 #Note: increasing this causes massive increases in the computations required for an evaluation. 
-detail_n = 25
+detail_n = 5
 
 #If we want the highest point or lowest point
 maximizing = True
@@ -211,6 +211,7 @@ for bbf_evaluation_i in range(2, bbf_evaluation_n):
     next_input = get_cartesian_product_element_by_index(itertools.product(*domain), next_input_i)
     #next_input = domain[next_input_i]
     #print "\tNew point: {}".format(next_input)
+
     bbf_inputs.append(np.array(next_input))
 
     #Evaluate new input
