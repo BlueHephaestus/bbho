@@ -51,7 +51,7 @@ class dennis(object):
         
 class lira2(object):
     def __init__(self, epochs, run_count):
-        self.configurer = lira_configurer.Configurer(epochs, run_count)
+        self.configurer = lira2_bbho_configurer.Configurer(epochs, run_count)
 
     def evaluate(self, bbf_evaluation_i, bbf_evaluation_n, next_input):
 
