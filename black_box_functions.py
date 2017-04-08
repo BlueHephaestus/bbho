@@ -22,7 +22,7 @@ import policy_gradient_configurer
 #For LIRA/DENNIS
 sys.path.append("../dennis/dennis6/src")#THIS NEEDS TO BE UPDATED
 
-sys.path.append("../tuberculosis_project/lira/lira1/src")
+sys.path.append("../tuberculosis_project/lira/lira2/src")
 import lira_configurer
 
 #How we obtain a scalar output given our inputs, for varying functions
@@ -49,7 +49,7 @@ class dennis(object):
         return [config_avg_output]
 """
         
-class lira(object):
+class lira2(object):
     def __init__(self, epochs, run_count):
         self.configurer = lira_configurer.Configurer(epochs, run_count)
 
@@ -57,6 +57,13 @@ class lira(object):
 
         #So we make sure that we don't lose available memory with each run (due to small Keras bug I believe)
         with tf.Session().as_default():
+            """
+            Get the config output, should be an average over training iterations
+            """
             config_output = self.configurer.run_config(next_input)
+
+            """
+            Then average over our epochs to get one scalar value
+            """
             config_avg_output = np.mean(config_output)
             return [config_avg_output]
