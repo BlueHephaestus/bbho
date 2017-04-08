@@ -23,7 +23,7 @@ import policy_gradient_configurer
 sys.path.append("../dennis/dennis6/src")#THIS NEEDS TO BE UPDATED
 
 sys.path.append("../tuberculosis_project/lira/lira2/src")
-import lira_configurer
+import lira2_bbho_configurer
 
 #How we obtain a scalar output given our inputs, for varying functions
 class policy_gradient(object):
