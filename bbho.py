@@ -55,7 +55,7 @@ LIRA IMPLEMENTATION
 """
 #We use our DENNIS+LIRA black box function
 #Configure specifics in the black_box_functions file and so on
-epochs = 50
+epochs = 100
 run_count = 3
 bbf = black_box_functions.lira2(epochs, run_count)
 
@@ -64,7 +64,7 @@ start_time = time.time()
         
 #Number of evaluated input points / level of detail
 #Note: increasing this causes massive increases in the computations required for an evaluation. 
-detail_n = 10
+detail_n = 20
 
 #If we want the highest point or lowest point
 maximizing = True
@@ -72,7 +72,7 @@ maximizing = True
 #Number of bbf evaluations allowed to perform before ending optimization
 bbf_evaluation_n = 20
 
-#Choice of acquisition function and af parameters
+#Choice of acquisition function and acquisition function parameters
 initial_confidence_interval = 1.5 
 #confidence_interval_decay_rate = -4.0/bbf_evaluation_n
 confidence_interval_decay_rate = 0
@@ -86,7 +86,7 @@ covariance_function = matern2(lengthscale, v)
 #Initialize ranges for each parameter into a resulting matrix
 #Our level of detail / detail_n determines our step size for each
 #Mini Batch Size,              Regularization Rate,  Dropout Percentage
-hps = [HyperParameter(50, 100), HyperParameter(0, 5), HyperParameter(0, 1)]
+hps = [HyperParameter(0, 100), HyperParameter(0, 5), HyperParameter(0, 1)]
 
 #UI/graph settings for testing
 plot_2d_results = False
