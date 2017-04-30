@@ -24,6 +24,7 @@ sys.path.append("../dennis/dennis6/src")#THIS NEEDS TO BE UPDATED
 
 sys.path.append("../tuberculosis_project/lira/lira2/src")
 import lira2_bbho_configurer
+import lira2_pre_transfer_bbho_configurer
 
 #How we obtain a scalar output given our inputs, for varying functions
 class policy_gradient(object):
@@ -52,6 +53,25 @@ class dennis(object):
 class lira2(object):
     def __init__(self, epochs, run_count):
         self.configurer = lira2_bbho_configurer.Configurer(epochs, run_count)
+
+    def evaluate(self, bbf_evaluation_i, bbf_evaluation_n, next_input):
+
+        #So we make sure that we don't lose available memory with each run (due to small Keras bug I believe)
+        with tf.Session().as_default():
+            """
+            Get the config output, should be an average over training iterations
+            """
+            config_output = self.configurer.run_config(next_input)
+
+            """
+            Then average over our epochs to get one scalar value
+            """
+            config_avg_output = np.mean(config_output)
+            return [config_avg_output]
+
+class lira2_pre_transfer(object):
+    def __init__(self, epochs, run_count):
+        self.configurer = lira2_pre_transfer_bbho_configurer.Configurer(epochs, run_count)
 
     def evaluate(self, bbf_evaluation_i, bbf_evaluation_n, next_input):
 

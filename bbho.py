@@ -57,7 +57,7 @@ LIRA IMPLEMENTATION
 #Configure specifics in the black_box_functions file and so on
 epochs = 100
 run_count = 3
-bbf = black_box_functions.lira2(epochs, run_count)
+bbf = black_box_functions.lira2_pre_transfer(epochs, run_count)
 
 #For efficiency comparisons
 start_time = time.time() 
