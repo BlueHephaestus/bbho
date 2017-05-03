@@ -64,13 +64,13 @@ start_time = time.time()
         
 #Number of evaluated input points / level of detail
 #Note: increasing this causes massive increases in the computations required for an evaluation. 
-detail_n = 20
+detail_n = 50
 
 #If we want the highest point or lowest point
 maximizing = True
 
 #Number of bbf evaluations allowed to perform before ending optimization
-bbf_evaluation_n = 20
+bbf_evaluation_n = 40
 
 #Choice of acquisition function and acquisition function parameters
 initial_confidence_interval = 1.5 
@@ -86,7 +86,7 @@ covariance_function = matern2(lengthscale, v)
 #Initialize ranges for each parameter into a resulting matrix
 #Our level of detail / detail_n determines our step size for each
 #Mini Batch Size,              Regularization Rate,  Dropout Percentage
-hps = [HyperParameter(50, 100), HyperParameter(0, 5), HyperParameter(0, 1)]
+hps = [HyperParameter(0, 100), HyperParameter(0, 7), HyperParameter(0, 1)]
 
 #UI/graph settings for testing
 plot_2d_results = False
